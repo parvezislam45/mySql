@@ -1,78 +1,65 @@
-import React, { useState } from 'react';
-import axios from "axios";
-import { useNavigate} from "react-router-dom";
-
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import {useParams, useNavigate} from 'react-router-dom'
 const Update = () => {
-    const [productId, setProductId] = useState('');
-    const [name, setName] = useState('');
-    const [desc, setDesc] = useState('');
-    const [category, setCategory] = useState('');
-    const [price, setPrice] = useState('');
-    const [image, setImage] = useState(null);
-    const [message, setMessage] = useState('');
-    
-    const handleUpdate = async (event) => {
-        event.preventDefault();
-        try {
-          const formData = new FormData();
-          formData.append('name', name);
-          formData.append('desc', desc);
-          formData.append('category', category);
-          formData.append('price', price);
-          formData.append('image', image);
-    
-          const response = await axios.put(`http://localhost:9000/products/${productId}`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-    
-          setMessage(response.data);
-        } catch (error) {
-          console.error('Error updating product:', error);
-          setMessage('Error updating product');
+  const {id} = useParams();
+  const [name,setName]= useState('');
+  const [category,setCategory]= useState('');
+  const [desc,setDesc]= useState('');
+  const [price,setPrice]= useState('');
+  const [image,setImage]= useState('')
+  const navigate = useNavigate();
+  useEffect(()=>{
+    axios.get('http://localhost:9000/products/'+id)
+    .then(res => {
+      setName(res.data[0].name);
+      setCategory(res.data[0].category)
+      setDesc(res.data[0].desc);
+      setPrice(res.data[0].price);
+      setImage(res.data[0].image)
+    })
+    .catch(err => console.log(err))
+  },[])
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.put('http://localhost:9000/products/' + id, { name, desc, category, price, image })
+      .then(res => {
+        if (res.data.updated) { // Check for the correct property name
+          navigate("/");
+        } else {
+          alert("not updated");
         }
-      };
-  
-    return (
-        <div>
-        <h2>Update Product</h2>
-        <form onSubmit={handleUpdate}>
-          <label>
-            ID:
-            <input type="text" value={productId} onChange={(e) => setProductId(e.target.value)} />
-          </label>
-          <br />
-          <label>
-            Name:
-            <input defaultValue={name.name} type="text" value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-          <br />
-          <label>
-            Description:
-            <input type="text" value={desc} onChange={(e) => setDesc(e.target.value)} />
-          </label>
-          <br />
-          <label>
-            Category:
-            <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} />
-          </label>
-          <br />
-          <label>
-            Price:
-            <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </label>
-          <br />
-          <label>
-            Image:
-            <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-          </label>
-          <br />
-          <button type="submit">Update Product</button>
-        </form>
-        {message && <p>{message}</p>}
-      </div>
-    );
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error updating product");
+      });
+  }
+  return (
+    <div>
+    <h1>Update</h1>
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="">Name</label>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder='name' type="text" />
+      <br/>
+      <label htmlFor="">description</label>
+      <input value={desc} onChange={e => setDesc(e.target.value)} placeholder='description' type="text" />
+      <br/>
+      <label htmlFor="">category</label>
+      <input value={category} onChange={e => setCategory(e.target.value)} placeholder='category' type="text" />
+      <br/>
+      <label htmlFor="">price</label>
+      <input value={price} onChange={e => setPrice(e.target.value)} placeholder='price' type="text" />
+      <br/>
+      <label htmlFor="">image</label>
+      <input value={image} onChange={(e) => setImage(e.target.files[0])} type="file" />
+      <br/>
+      <button>Update</button>
+    </form>
+    </div>
+  );
 };
 
 export default Update;

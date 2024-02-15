@@ -28,7 +28,7 @@ const Add = () => {
       });
 
       console.log('Product added successfully');
-      // You can redirect the user or show a success message here
+
     } catch (error) {
       console.error('Error adding product:', error);
     }
